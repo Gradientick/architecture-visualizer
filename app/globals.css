@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Default theme: midnight ─────────────────────────────────────────────── */
+:root,
+[data-theme="midnight"] {
+  --bg-primary:    #0a0a0a;
+  --bg-secondary:  #111111;
+  --bg-card:       #1a1a1a;
+  --border:        #2a2a2a;
+  --accent:        #6366f1;
+  --accent-hover:  #4f46e5;
+  --text-primary:  #f4f4f5;
+  --text-secondary:#a1a1aa;
+  --text-muted:    #52525b;
+}
+
+/* ── Warm dark theme ──────────────────────────────────────────────────────── */
+[data-theme="warm-dark"] {
+  --bg-primary:    #131008;
+  --bg-secondary:  #1a160b;
+  --bg-card:       #231e12;
+  --border:        #352e1e;
+  --accent:        #d97706;
+  --accent-hover:  #b45309;
+  --text-primary:  #fef3c7;
+  --text-secondary:#d6b87a;
+  --text-muted:    #7c6b47;
+}
+
+/* ── Light theme ──────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary:    #f8f8f8;
+  --bg-secondary:  #ffffff;
+  --bg-card:       #f0f0f0;
+  --border:        #e0e0e0;
+  --accent:        #6366f1;
+  --accent-hover:  #4f46e5;
+  --text-primary:  #111111;
+  --text-secondary:#374151;
+  --text-muted:    #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* React Flow canvas background */
+.react-flow__background {
+  background-color: var(--bg-primary) !important;
+}
+
+/* React Flow panel overrides */
+.react-flow__controls {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+.react-flow__controls button {
+  background: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+.react-flow__controls button:hover {
+  background: var(--bg-card) !important;
+}
+.react-flow__minimap {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Hide scrollbar utility for specific elements */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Node dimmed state (for search/filter/tour) */
+.rf-node-dimmed {
+  opacity: 0.12 !important;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.rf-node-dimmed .react-flow__handle {
+  pointer-events: none;
+}
+
+/* Node focused state (for tour spotlight) */
+.rf-node-focused {
+  filter: drop-shadow(0 0 12px var(--accent));
+  transition: filter 0.3s ease, opacity 0.25s ease;
+}

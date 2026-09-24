@@ -1,0 +1,37 @@
+{
+  "name": "architecture-visualizer",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Generate interactive architecture diagrams from local directories or website URLs",
+  "bin": {
+    "architecture-visualizer": "./bin/cli.js"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@reactflow/node-resizer": "^2.2.0",
+    "fuse.js": "^7.5.0",
+    "html-to-image": "^1.11.11",
+    "idb-keyval": "^6.3.0",
+    "next": "^15.3.0",
+    "open": "^10.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "reactflow": "^11.11.4",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3"
+  }
+}
