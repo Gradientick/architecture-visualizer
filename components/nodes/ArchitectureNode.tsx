@@ -2,15 +2,7 @@
 
 import { memo } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow } from 'reactflow';
-import { useAppStore } from '@/lib/store';
-
-export type NodeCategory =
-  | 'frontend'
-  | 'backend'
-  | 'database'
-  | 'infrastructure'
-  | 'external'
-  | 'mobile';
+import { useAppStore, type NodeCategory } from '@/lib/store';
 
 export interface ArchitectureNodeData {
   label: string;
@@ -20,6 +12,8 @@ export interface ArchitectureNodeData {
   tech: string;
   confidence: 'confirmed' | 'inferred';
   icon?: string;
+  inputSchema?: string;
+  outputSchema?: string;
 }
 
 const CATEGORY_STYLES: Record<NodeCategory, { border: string; accent: string; badge: string }> = {
@@ -29,6 +23,9 @@ const CATEGORY_STYLES: Record<NodeCategory, { border: string; accent: string; ba
   infrastructure: { border: '#a855f7', accent: '#a855f71a', badge: '#a855f733 text-purple-300' },
   external:       { border: '#64748b', accent: '#64748b1a', badge: '#64748b33 text-slate-300' },
   mobile:         { border: '#ec4899', accent: '#ec48991a', badge: '#ec489933 text-pink-300' },
+  user:           { border: '#06b6d4', accent: '#06b6d41a', badge: '#06b6d433 text-cyan-300' },
+  process:        { border: '#f59e0b', accent: '#f59e0b1a', badge: '#f59e0b33 text-amber-300' },
+  mockup:         { border: '#6366f1', accent: '#6366f11a', badge: '#6366f133 text-indigo-300' },
 };
 
 const CATEGORY_LABELS: Record<NodeCategory, string> = {
@@ -38,6 +35,9 @@ const CATEGORY_LABELS: Record<NodeCategory, string> = {
   infrastructure: 'Infrastructure',
   external:       'External',
   mobile:         'Mobile',
+  user:           'User / Actor',
+  process:        'Process / Step',
+  mockup:         'UI / Screen',
 };
 
 function ArchitectureNode({ id, data, selected }: NodeProps<ArchitectureNodeData>) {

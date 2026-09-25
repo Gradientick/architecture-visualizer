@@ -5,6 +5,7 @@ import type { ArchitectureNodeData } from './nodes/ArchitectureNode';
 import type { TourStep } from '@/lib/prompts';
 import type { FileTreeNode } from '@/lib/analyzer';
 import TourPanel from './TourPanel';
+import NodeEditorPanel from './NodeEditorPanel';
 
 interface RightPanelProps {
   nodeData: ArchitectureNodeData | null;
@@ -22,6 +23,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   infrastructure: '#a855f7',
   external: '#64748b',
   mobile: '#ec4899',
+  user: '#06b6d4',
+  process: '#f59e0b',
+  mockup: '#6366f1',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -31,6 +35,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   infrastructure: 'Infrastructure',
   external: 'External',
   mobile: 'Mobile',
+  user: 'User / Actor',
+  process: 'Process / Step',
+  mockup: 'UI / Screen',
 };
 
 function FileTreeItem({ node, depth = 0 }: { node: FileTreeNode; depth?: number }) {
@@ -64,7 +71,7 @@ export default function RightPanel({
   onTourFocusNodes,
   projectSummary,
 }: RightPanelProps) {
-  const { rightPanelTab, setRightPanelTab, rightPanelOpen, setRightPanelOpen, viewMode } = useAppStore();
+  const { rightPanelTab, setRightPanelTab, rightPanelOpen, setRightPanelOpen, viewMode, selectedNodeId, isEditingNode, setIsEditingNode } = useAppStore();
 
   // Auto-switch to INFO when a node is selected
   const effectiveTab = rightPanelOpen ? rightPanelTab : null;
@@ -128,8 +135,16 @@ export default function RightPanel({
                   </div>
                 )}
 
-                {/* Node details — show when a node is selected */}
-                {nodeData && (
+                {/* Node Editor / Details */}
+                {isEditingNode ? (
+                  <div className={tourSteps && tourSteps.length > 0 ? 'border-t border-[var(--border)] pt-4' : ''}>
+                    <NodeEditorPanel 
+                      nodeId={selectedNodeId} 
+                      initialData={nodeData} 
+                      onClose={() => setIsEditingNode(false)} 
+                    />
+                  </div>
+                ) : nodeData ? (
                   <div className={tourSteps && tourSteps.length > 0 ? 'border-t border-[var(--border)] pt-4' : ''}>
                     {/* Accent bar */}
                     <div
@@ -148,14 +163,26 @@ export default function RightPanel({
                         </h3>
                         <p className="text-[var(--text-muted)] text-[12px] mt-0.5">{nodeData.tech}</p>
                       </div>
-                      <button
-                        onClick={onClose}
-                        className="ml-auto text-[var(--text-muted)] hover:text-white transition-colors p-1 rounded"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      <div className="ml-auto flex items-center gap-1">
+                        <button
+                          onClick={() => setIsEditingNode(true)}
+                          className="text-[var(--text-muted)] hover:text-white transition-colors p-1 rounded"
+                          title="Edit Node"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={onClose}
+                          className="text-[var(--text-muted)] hover:text-white transition-colors p-1 rounded"
+                          title="Close Details"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Description */}
@@ -163,10 +190,28 @@ export default function RightPanel({
                       <h4 className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-semibold mb-2">
                         Purpose & Responsibilities
                       </h4>
-                      <p className="text-[var(--text-secondary)] text-[13px] leading-relaxed">
+                      <p className="text-[var(--text-secondary)] text-[13px] leading-relaxed whitespace-pre-wrap">
                         {nodeData.description || 'No description available.'}
                       </p>
                     </div>
+
+                    {/* Schemas */}
+                    {nodeData.inputSchema && (
+                      <div className="mb-4">
+                        <h4 className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-semibold mb-2">Input Schema</h4>
+                        <pre className="text-[11px] text-[var(--text-secondary)] bg-[var(--bg-primary)] p-2 rounded border border-[var(--border)] overflow-x-auto">
+                          {nodeData.inputSchema}
+                        </pre>
+                      </div>
+                    )}
+                    {nodeData.outputSchema && (
+                      <div className="mb-4">
+                        <h4 className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-semibold mb-2">Output Schema</h4>
+                        <pre className="text-[11px] text-[var(--text-secondary)] bg-[var(--bg-primary)] p-2 rounded border border-[var(--border)] overflow-x-auto">
+                          {nodeData.outputSchema}
+                        </pre>
+                      </div>
+                    )}
 
                     {/* Metadata grid */}
                     <div className="grid grid-cols-2 gap-3 bg-[var(--bg-card)] rounded-lg p-3 border border-[var(--border)]">
@@ -194,10 +239,7 @@ export default function RightPanel({
                       </div>
                     </div>
                   </div>
-                )}
-
-                {/* Empty info state */}
-                {!nodeData && (!tourSteps || tourSteps.length === 0) && (
+                ) : (
                   <div className="flex flex-col items-center justify-center h-40 text-center">
                     <span className="text-3xl mb-3 opacity-30">🖱️</span>
                     <p className="text-[var(--text-muted)] text-[12px]">

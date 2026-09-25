@@ -44,7 +44,7 @@ export default function DiagramCanvas({
   onNodeSelect,
 }: DiagramCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const { activeFilters, searchQuery, viewMode, tourActive, selectedNodeId } = useAppStore();
+  const { activeFilters, searchQuery, viewMode, tourActive, selectedNodeId, addEdgeToActiveSession, setIsEditingNode, setSelectedNodeId } = useAppStore();
 
   // 1. Tag & Search filtering
   const visibleIds = useMemo(() => {
@@ -139,6 +139,19 @@ export default function DiagramCanvas({
 
   const hasContent = nodes.length > 0;
 
+  const onConnect = useCallback((connection: any) => {
+    addEdgeToActiveSession({
+      id: `${connection.source}-${connection.target}`,
+      source: connection.source,
+      target: connection.target,
+    });
+  }, [addEdgeToActiveSession]);
+
+  const handleAddNodeClick = () => {
+    setSelectedNodeId(null);
+    setIsEditingNode(true);
+  };
+
   return (
     <div ref={canvasRef} className="relative w-full h-full" style={{ background: 'var(--bg-primary)' }}>
       <ReactFlow
@@ -148,10 +161,11 @@ export default function DiagramCanvas({
         fitView
         fitViewOptions={{ padding: 0.15 }}
         nodesDraggable={false}
-        nodesConnectable={false}
+        nodesConnectable={true}
         elementsSelectable={true}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        onConnect={onConnect}
         panOnScroll
         zoomOnScroll
         minZoom={0.1}
@@ -189,6 +203,19 @@ export default function DiagramCanvas({
           <ExportButton canvasRef={canvasRef} />
         </div>
       )}
+
+      {/* Floating Add Node button — bottom right */}
+      <div className="absolute bottom-6 right-6 z-10">
+        <button
+          onClick={handleAddNodeClick}
+          className="w-12 h-12 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors"
+          title="Add Node"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
 
       {/* Empty state */}
       {!hasContent && !isLoading && (

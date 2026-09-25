@@ -8,10 +8,12 @@ export interface GraphNode {
     label: string;
     subtitle: string;
     description: string;
-    category: 'frontend' | 'backend' | 'database' | 'infrastructure' | 'external' | 'mobile';
+    category: 'frontend' | 'backend' | 'database' | 'infrastructure' | 'external' | 'mobile' | 'user' | 'process' | 'mockup';
     tech: string;        // e.g. "Next.js", "PostgreSQL"
     confidence: 'confirmed' | 'inferred';
     icon?: string;       // emoji or icon name
+    inputSchema?: string;
+    outputSchema?: string;
   };
   // React Flow parent/child — injected by clustering.ts, not from Gemini
   parentNode?: string;

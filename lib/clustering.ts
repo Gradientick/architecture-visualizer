@@ -46,6 +46,9 @@ export function autoCluster(nodes: GraphNode[]): GraphGroup[] {
     infrastructure: 'Infrastructure & Deployment',
     external: 'External Services',
     mobile: 'Mobile',
+    user: 'User / Actor',
+    process: 'Process / Step',
+    mockup: 'UI / Screen',
   };
 
   const groups: GraphGroup[] = [];

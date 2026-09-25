@@ -280,16 +280,58 @@ export default function Sidebar({
             <span className="text-green-400 text-xs">Analysis complete</span>
           </div>
         )}
+
+        <div className="mt-8 border-t border-[#1a1a1a] pt-6">
+          <button
+            onClick={() => {
+              onAnalysisComplete(
+                { nodes: [], edges: [], techStack: [], summary: 'Manually created architecture' },
+                'Blank Architecture'
+              );
+            }}
+            className="w-full bg-[#111111] border border-[#2a2a2a] hover:bg-[#1a1a1a] hover:border-[#3f3f46] text-[#a1a1aa] hover:text-white text-sm font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <span>+</span> Start Blank Architecture
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-[#1a1a1a]">
+      <div className="px-4 py-3 border-t border-[#1a1a1a] flex flex-col gap-2">
         <a
           href="/setup"
           className="text-[#3f3f46] hover:text-[#71717a] text-[10px] transition-colors"
         >
           ⚙ Update API key
         </a>
+        <div className="flex gap-3">
+          <button
+            onClick={async () => {
+              const { exportWorkEnvironment } = await import('@/lib/export');
+              await exportWorkEnvironment();
+            }}
+            className="text-[#3f3f46] hover:text-[#71717a] text-[10px] transition-colors"
+          >
+            ↓ Export Workspace
+          </button>
+          <label className="text-[#3f3f46] hover:text-[#71717a] text-[10px] transition-colors cursor-pointer">
+            ↑ Import Workspace
+            <input 
+              type="file" 
+              accept=".json" 
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const { importWorkEnvironment } = await import('@/lib/export');
+                  await importWorkEnvironment(file);
+                  // Reload the page to load new sessions from DB
+                  window.location.reload();
+                }
+              }} 
+            />
+          </label>
+        </div>
       </div>
     </aside>
   );

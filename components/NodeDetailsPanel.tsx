@@ -14,6 +14,9 @@ const CATEGORY_COLORS = {
   infrastructure: '#a855f7',
   external: '#64748b',
   mobile: '#ec4899',
+  user: '#06b6d4',
+  process: '#f59e0b',
+  mockup: '#6366f1',
 };
 
 const CATEGORY_LABELS = {
@@ -23,6 +26,9 @@ const CATEGORY_LABELS = {
   infrastructure: 'Infrastructure',
   external: 'External',
   mobile: 'Mobile',
+  user: 'User / Actor',
+  process: 'Process / Step',
+  mockup: 'UI / Screen',
 };
 
 export default function NodeDetailsPanel({ nodeData, onClose }: NodeDetailsPanelProps) {

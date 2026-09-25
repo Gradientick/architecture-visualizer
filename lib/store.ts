@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ArchitectureGraph } from './prompts';
+import type { ArchitectureGraph, GraphNode, GraphEdge } from './prompts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -20,7 +20,10 @@ export type NodeCategory =
   | 'database'
   | 'infrastructure'
   | 'external'
-  | 'mobile';
+  | 'mobile'
+  | 'user'
+  | 'process'
+  | 'mockup';
 
 export interface ArchSession {
   id: string;
@@ -39,6 +42,14 @@ interface AppStore {
   removeSession: (id: string) => void;
   reorderSessions: (from: number, to: number) => void;
   setActiveSession: (id: string | null) => void;
+
+  // Graph editing actions
+  createBlankSession: (title: string) => void;
+  addNodeToActiveSession: (node: GraphNode) => void;
+  updateNodeInActiveSession: (id: string, data: Partial<GraphNode['data']>) => void;
+  addEdgeToActiveSession: (edge: GraphEdge) => void;
+  removeNodeFromActiveSession: (id: string) => void;
+  removeEdgeFromActiveSession: (id: string) => void;
 
   // View mode
   viewMode: ViewMode;
@@ -72,6 +83,10 @@ interface AppStore {
   setRightPanelTab: (tab: 'info' | 'files') => void;
   rightPanelOpen: boolean;
   setRightPanelOpen: (open: boolean) => void;
+
+  // Node Editing
+  isEditingNode: boolean;
+  setIsEditingNode: (editing: boolean) => void;
 }
 
 // ── Store implementation ───────────────────────────────────────────────────
@@ -109,6 +124,95 @@ export const useAppStore = create<AppStore>()(
         });
       },
       setActiveSession: (id) => set({ activeSessionId: id }),
+
+      // Graph editing actions
+      createBlankSession: (title) => {
+        const id = crypto.randomUUID();
+        const newSession: ArchSession = {
+          id,
+          title,
+          createdAt: Date.now(),
+          graph: { nodes: [], edges: [], techStack: [], summary: 'Manually created architecture' },
+        };
+        set((s) => ({
+          sessions: [...s.sessions, newSession],
+          activeSessionId: id,
+        }));
+      },
+      addNodeToActiveSession: (node) => {
+        set((s) => {
+          if (!s.activeSessionId) return s;
+          const session = s.sessions.find((sess) => sess.id === s.activeSessionId);
+          if (!session) return s;
+          const newGraph = { ...session.graph, nodes: [...session.graph.nodes, node] };
+          return {
+            sessions: s.sessions.map((sess) =>
+              sess.id === s.activeSessionId ? { ...sess, graph: newGraph } : sess
+            ),
+          };
+        });
+      },
+      updateNodeInActiveSession: (id, data) => {
+        set((s) => {
+          if (!s.activeSessionId) return s;
+          const session = s.sessions.find((sess) => sess.id === s.activeSessionId);
+          if (!session) return s;
+          const newNodes = session.graph.nodes.map((n) =>
+            n.id === id ? { ...n, data: { ...n.data, ...data } } : n
+          );
+          const newGraph = { ...session.graph, nodes: newNodes };
+          return {
+            sessions: s.sessions.map((sess) =>
+              sess.id === s.activeSessionId ? { ...sess, graph: newGraph } : sess
+            ),
+          };
+        });
+      },
+      addEdgeToActiveSession: (edge) => {
+        set((s) => {
+          if (!s.activeSessionId) return s;
+          const session = s.sessions.find((sess) => sess.id === s.activeSessionId);
+          if (!session) return s;
+          // Avoid duplicate edges
+          if (session.graph.edges.find((e) => e.source === edge.source && e.target === edge.target)) return s;
+          const newGraph = { ...session.graph, edges: [...session.graph.edges, edge] };
+          return {
+            sessions: s.sessions.map((sess) =>
+              sess.id === s.activeSessionId ? { ...sess, graph: newGraph } : sess
+            ),
+          };
+        });
+      },
+      removeNodeFromActiveSession: (id) => {
+        set((s) => {
+          if (!s.activeSessionId) return s;
+          const session = s.sessions.find((sess) => sess.id === s.activeSessionId);
+          if (!session) return s;
+          const newNodes = session.graph.nodes.filter((n) => n.id !== id);
+          // Also remove edges connected to this node
+          const newEdges = session.graph.edges.filter((e) => e.source !== id && e.target !== id);
+          const newGraph = { ...session.graph, nodes: newNodes, edges: newEdges };
+          return {
+            sessions: s.sessions.map((sess) =>
+              sess.id === s.activeSessionId ? { ...sess, graph: newGraph } : sess
+            ),
+          };
+        });
+      },
+      removeEdgeFromActiveSession: (id) => {
+        set((s) => {
+          if (!s.activeSessionId) return s;
+          const session = s.sessions.find((sess) => sess.id === s.activeSessionId);
+          if (!session) return s;
+          const newEdges = session.graph.edges.filter((e) => e.id !== id);
+          const newGraph = { ...session.graph, edges: newEdges };
+          return {
+            sessions: s.sessions.map((sess) =>
+              sess.id === s.activeSessionId ? { ...sess, graph: newGraph } : sess
+            ),
+          };
+        });
+      },
 
       // View mode
       viewMode: 'overview',
@@ -154,6 +258,10 @@ export const useAppStore = create<AppStore>()(
       setRightPanelTab: (tab) => set({ rightPanelTab: tab }),
       rightPanelOpen: true,
       setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
+
+      // Node Editing
+      isEditingNode: false,
+      setIsEditingNode: (editing) => set({ isEditingNode: editing, rightPanelOpen: true }),
     }),
     {
       name: 'arch-viz-store',
