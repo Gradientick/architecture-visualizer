@@ -17,7 +17,7 @@ Architecture Visualizer is a powerful, local-first tool that analyzes your codeb
 
 ### Prerequisites
 - Node.js 18+
-- A Google Gemini API Key
+- A Google Gemini API Key (get one at [Google AI Studio](https://aistudio.google.com/app/apikey))
 
 ### Installation
 

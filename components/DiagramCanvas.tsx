@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useMemo } from 'react';
+import { useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -9,6 +9,7 @@ import ReactFlow, {
   type Node,
   type Edge,
   MarkerType,
+  type ReactFlowInstance,
 } from 'reactflow';
 import ArchitectureNode, { type ArchitectureNodeData } from './nodes/ArchitectureNode';
 import GroupNode from './nodes/GroupNode';
@@ -44,6 +45,7 @@ export default function DiagramCanvas({
   onNodeSelect,
 }: DiagramCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const { activeFilters, searchQuery, viewMode, tourActive, selectedNodeId, addEdgeToActiveSession, setIsEditingNode, setSelectedNodeId } = useAppStore();
 
   // 1. Tag & Search filtering
@@ -63,6 +65,37 @@ export default function DiagramCanvas({
     if (tourActive && tourFocusIds.length > 0) return new Set(tourFocusIds);
     return new Set();
   }, [tourActive, tourFocusIds]);
+
+  // 4. Auto-pan to tour nodes
+  useEffect(() => {
+    if (tourActive && tourFocusIds.length > 0 && rfInstance) {
+      const targetNodes = tourFocusIds.map(id => rfInstance.getNode(id)).filter(Boolean) as Node[];
+      
+      if (targetNodes.length > 0) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        targetNodes.forEach(n => {
+          // Fallback to relative position if absolute isn't available, though it should be.
+          const x = n.positionAbsolute?.x ?? n.position.x;
+          const y = n.positionAbsolute?.y ?? n.position.y;
+          const w = n.width ?? 250;
+          const h = n.height ?? 150;
+          
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x + w > maxX) maxX = x + w;
+          if (y + h > maxY) maxY = y + h;
+        });
+
+        if (minX !== Infinity) {
+          rfInstance.fitBounds(
+            { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+            { padding: 0.3, duration: 800, maxZoom: 1.2 }
+          );
+        }
+      }
+    }
+  }, [tourActive, tourFocusIds, rfInstance]);
 
   const hasActiveFilter = activeFilters.length > 0 || searchQuery.length > 0;
   const hasTourFocus = tourFocusedIds.size > 0;
@@ -166,6 +199,7 @@ export default function DiagramCanvas({
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onConnect={onConnect}
+        onInit={setRfInstance}
         panOnScroll
         zoomOnScroll
         minZoom={0.1}
